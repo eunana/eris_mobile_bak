@@ -3,7 +3,7 @@
 if ('serviceWorker' in navigator) {
 	
 	self.addEventListener('load', () => {
-		navigator.serviceWorker.register('/sw.js')
+		navigator.serviceWorker.register('/eris_mobile/eris_mobile/src/main/webapp/js/sw.js')
 		.then(reg => {
 			console.log('서비스 워커가 등록되었습니다.', reg);
 		})

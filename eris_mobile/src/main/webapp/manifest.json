@@ -1,7 +1,7 @@
 {
     "name": "eGovFramework Mobile",
     "short_name": "eGovMobile",
-    "start_url": "/",
+    "start_url": "/eris_mobile/eris_mobile/src/main/webapp/",
     "display": "standalone",
     "orientation": "portrait",
     "background_color": "#ff0",

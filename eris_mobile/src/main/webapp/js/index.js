@@ -10,6 +10,13 @@ if ('serviceWorker' in navigator) {
 		.catch(err => {
 			console.log('Registration failed:', err);
 		});
+		
+		setTimeout(() => {
+		    const img = new Image();
+		    img.src = '/eris_mobile/eris_mobile/src/main/webapp/images/egovframework/eris/call.png';
+		    document.body.appendChild(img);
+		  }, 3000);
+		
 	});
 }
 

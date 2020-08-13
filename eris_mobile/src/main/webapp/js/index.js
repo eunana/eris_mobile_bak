@@ -15,7 +15,7 @@ if ('serviceWorker' in navigator) {
 		    const img = new Image();
 		    img.src = '/eris_mobile/eris_mobile/src/main/webapp/images/egovframework/eris/call.png';
 		    document.body.appendChild(img);
-		  }, 3000);
+		  }, 10000);
 		
 	});
 }

@@ -1,0 +1,115 @@
+package egovframework.eris.dcr.web;
+
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import egovframework.com.cmm.ComDefaultCodeVO;
+import egovframework.com.cmm.LoginVO;
+import egovframework.com.cmm.service.CmmnDetailCode;
+import egovframework.com.cmm.service.EgovCmmUseService;
+import egovframework.com.cmm.service.EgovProperties;
+import egovframework.com.cmm.util.EgovUserDetailsHelper;
+import egovframework.mbl.com.cmm.annotation.IncludedMblInfo;
+import egovframework.mbl.com.oas.service.EgovOpenApiService;
+import egovframework.mbl.com.oas.service.OpenApi;
+import egovframework.mbl.com.oas.service.OpenApiVO;
+import egovframework.rte.fdl.property.EgovPropertyService;
+import egovframework.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import kma.websky.client.stub.forecast.CurrentWeatherModel;
+import kma.websky.client.stub.forecast.SurfaceServiceImplService_Impl;
+import kma.websky.client.stub.forecast.SurfaceServiceImpl_Stub;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import noNamespace.SearchDocument;
+import noNamespace.SearchDocument.Search;
+import noNamespace.TotalResultsDocument.TotalResults;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.google.cloud.translate.Translate;
+import com.google.cloud.translate.Translate.TranslateOption;
+import com.google.cloud.translate.TranslateOptions;
+import com.google.cloud.translate.Translation;
+
+
+/**
+ * 개요
+ * - 구글 텍스트 번역에 대한 Controller를 정의한다.
+ *
+ * 상세내용
+ * - 
+ * @author 고은아
+ * @since 2020.08.07
+ * @version 1.0
+ * @see
+ *
+ * <pre>
+ * << 개정이력(Modification Information) >>
+ *
+ *   수정일      수정자           수정내용
+ *  -------    --------    ---------------------------
+ *   2020.08.07  고은아          최초 생성
+ *
+ * </pre>
+ */
+@Controller
+public class ErisGoogleTrslnController {
+
+	/** EgovPropertyService */
+	@Resource(name="propertiesService")
+	protected EgovPropertyService propertyService;
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(ErisGoogleTrslnController.class);
+	
+	@RequestMapping("/eris/dcr/erisGoogleTrsln.mdo")
+	public String selectOpenApiGoogleTrsln(@ModelAttribute("searchVO") OpenApiVO openApiVO, ModelMap model) throws Exception {
+		// 권한 체크
+		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+		
+		
+		return "egovframework/eris/dcr/ErisGoogleTrsln";
+	}
+	
+	
+	@RequestMapping("/eris/dcr/googleTranslate.mdo")
+	public ModelAndView googleTranslate(@RequestParam Map<String, Object> param) throws Exception {
+		// 권한 체크
+		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+		
+		Translate translate = TranslateOptions.getDefaultInstance().getService();
+		
+		// 언어 자동감지 기능 넣기
+		
+		Translation translation = translate.translate(param.get("beforeText").toString(), 
+											TranslateOption.sourceLanguage("ko"), 
+											TranslateOption.targetLanguage("en"));
+		
+		String afterText = translation.getTranslatedText();			// 번역결과
+		
+		ModelAndView modelAndView = new ModelAndView("jsonView");
+		modelAndView.addObject("afterText", afterText);
+		
+		return modelAndView;
+	}
+
+}

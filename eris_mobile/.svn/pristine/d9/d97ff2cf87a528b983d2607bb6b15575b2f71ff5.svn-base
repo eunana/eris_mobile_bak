@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!--Converted at: Wed May 11 15:49:38 KST 2016-->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="LoginDAO">
+
+
+	 
+	<select id="selectActionLogin" parameterType="map" resultType="egovframework.com.cmm.LoginVO">
+		/* LoginDAO.selectActionLogin */
+		SELECT	MBER_ID AS ID, 
+				MBER_NM AS NAME, 
+				ihidNum AS IHIDNUM, 
+				PASSWORD AS PASSWORD, 
+				MBER_EMAIL_ADRES AS EMAIL, 
+				'GNR' AS USERSE, 
+				'-' AS ORGNZTID, 
+				ESNTL_ID AS UNIQID
+		FROM COMTNGNRLMBER
+		WHERE MBER_ID = #{id}
+		AND MBER_STTUS = 'P'
+	</select>
+
+	<select id="selectEmplyrInfoForLogin" parameterType="map" resultType="egovMap">
+		/* LoginDAO.selectEmplyrInfoForLogin */
+		SELECT
+			EMP.EMPLYR_SN,
+			EMP.EMPLYR_ID,
+			EMP.EMPLYR_NM,
+			EMP.EMPLYR_PASSWORD,
+			FN_GET_UPPER_DEPT_ID(EMP.DEPT_ID) AS UP_DEPT_ID,
+			EMP.DEPT_ID,
+			EMP.MULTI_LOGIN_PERM_AT,
+			(
+				SELECT
+					LISTAGG(AUTHOR_GROUP_SN, ',') WITHIN GROUP(ORDER BY AUTHOR_GROUP_SN) AS AUTHOR_GROUP_SN
+				FROM
+					TCM_EMPLYRBY_GROUP_AUTHOR
+				WHERE
+					EMPLYR_SN = EMP.EMPLYR_SN
+			) AS AUTHOR_GROUP_SN,
+			EMP.EMPLYR_SE_CODE,
+			NVL(AREA.BIZPLC_ID, '00') AS BIZPLC_ID,
+			SPCL_AUTHOR_CODE,
+			ET.CONNECTIP AS CONNECT_IP,
+			TO_CHAR(TO_DATE(ET.CONNECTTIME, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD HH24:MI:SS') AS CONNECT_TIME
+		FROM
+			TCM_EMPLYR	EMP,
+			(
+				SELECT
+					MAX(BIZPLC_ID) AS BIZPLC_ID,
+					DEPT_ID
+				FROM
+					TWC_BIZPLC
+				GROUP BY
+					DEPT_ID
+			) AREA,
+			(
+				SELECT
+					JUMINNO,
+					CONNECTIP,
+					CONNECTTIME
+				FROM
+					WATER.ET125
+				WHERE
+					USERCONNECTSN = (
+										SELECT
+											USERCONNECTSN
+										FROM
+											(
+												SELECT
+													ROW_NUMBER() OVER(ORDER BY USERCONNECTSN DESC) AS RNUM,
+													USERCONNECTSN
+												FROM
+													WATER.ET125
+												WHERE
+													JUMINNO = 	(
+																	SELECT
+																		EMPLYR_SN
+																	FROM
+																		TCM_EMPLYR
+																	WHERE
+																		EMPLYR_ID = DAMO.DECRYPT_VAR('NORMAL', #{emplyrId}, '')
+																)
+											)
+										WHERE
+											RNUM = 2
+										<!-- SELECT
+											MAX(USERCONNECTSN)
+										FROM
+											WATER.ET125
+										WHERE
+											JUMINNO = 	(
+															SELECT
+																EMPLYR_SN
+															FROM
+																TCM_EMPLYR
+															WHERE
+																EMPLYR_ID = #{emplyrId}
+														) -->
+									)
+			) ET
+		WHERE
+			EMP.EMPLYR_SN	= ET.JUMINNO(+)
+		AND EMP.EMPLYR_ID	= DAMO.DECRYPT_VAR('NORMAL', #{emplyrId}, '')
+		AND TO_CHAR(SYSDATE, 'YYYYMMDD') BETWEEN EMP.USE_BEGIN_DAY AND EMP.USE_END_DAY
+		AND AREA.DEPT_ID(+) = DECODE(FN_GET_UPPER_DEPT_ID(EMP.DEPT_ID), '10000', EMP.DEPT_ID, FN_GET_UPPER_DEPT_ID(EMP.DEPT_ID))
+	</select>
+	
+	<!-- 접속가능 IP대역 조회(작업중단항목에서 조회) -->
+	<select id="LoginDAO.selectLoginIpAddress" parameterType="map" resultType="egovMap">
+		/* LoginDAO.selectLoginIpAddress */
+		SELECT
+			OPERT_DSCNTC_DC		/*작업중단설명*/
+		FROM
+			TCM_OPERT_DSCNTC_IEM
+		WHERE
+			OPERT_DSCNTC_ID = 'IPADDRESS'
+		AND OPERT_DSCNTC_AT = 'Y'
+	</select>
+	
+	<!-- 접속가능 시간 조회(작업중단항목에서 조회) -->
+	<select id="LoginDAO.selectLoginTime" parameterType="map" resultType="egovMap">
+		/* LoginDAO.selectLoginTime */
+		SELECT
+			CASE
+				WHEN TO_CHAR(SYSDATE, 'HH24MI') BETWEEN SUBSTR(OPERT_DSCNTC_DC, 1, 4) AND SUBSTR(OPERT_DSCNTC_DC, 6) THEN 'Y'
+				ELSE 'N'
+			END AS ACCESS_TIME
+		FROM
+			TCM_OPERT_DSCNTC_IEM
+		WHERE
+			OPERT_DSCNTC_ID = 'LOGINTIME'
+		AND OPERT_DSCNTC_AT = 'Y'
+	</select>
+	
+</mapper>

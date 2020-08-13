@@ -3,7 +3,7 @@
 if ('serviceWorker' in navigator) {
 	
 	self.addEventListener('load', () => {
-		navigator.serviceWorker.register('/eris_mobile/eris_mobile/src/main/webapp/js/sw.js')
+		navigator.serviceWorker.register('sw.js')
 		.then(reg => {
 			console.log('서비스 워커가 등록되었습니다.', reg);
 		})
@@ -13,7 +13,7 @@ if ('serviceWorker' in navigator) {
 		
 		setTimeout(() => {
 		    const img = new Image();
-		    img.src = '/eris_mobile/eris_mobile/src/main/webapp/images/egovframework/eris/call.png';
+		    img.src = 'images/egovframework/eris/call.png';
 		    document.body.appendChild(img);
 		  }, 10000);
 		
